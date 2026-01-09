@@ -7,18 +7,19 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/css/bootstrap.min.css">
 		<link rel="stylesheet" href="https://sugar.wtf/wizardry.min.css">
-		<link rel="stylesheet" href="https://sugar.wtf/entypo/entypo.css">
+		<link rel="stylesheet" href="https://volbil.github.io/entypo/entypo.css">
 
 		<link rel="icon" type="image/png" href="https://sugarchain.org/logo.png">
 		<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro&display=swap" rel="stylesheet">
-		
+
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/js-sha256/0.9.0/sha256.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.qrcode/1.0/jquery.qrcode.min.js"></script>
-		<script src="https://cdn.jsdelivr.net/gh/cozmo/jsQR@master/dist/jsQR.js"></script>
-		<script src="multilang.js"></script>
+		<script src="multilang.js?4"></script>
+
+		<script src="https://cdn.jsdelivr.net/npm/jdenticon@3.2.0/dist/jdenticon.min.js"></script>
 
 		<script>
 			// BitcoinJS
@@ -93,13 +94,6 @@
 			}
 			.balance-small {
 				font-size: 15px;
-			}
-			.send-balance-fix {
-				padding: 0px 0px 8px 0px;
-				display: inline-block;
-			}
-			.break-word {
-				word-wrap: break-word;
 			}
 		</style>
 		<title>Wallet</title>
@@ -205,8 +199,11 @@
 								<li class="nav-item mr-2">
 									<a id="history-link" class="nav-link" target="_blank" href="https://sugar.wtf/#/address/" tkey="history"></a>
 								</li>
-								<li class="nav-item">
+								<li class="nav-item mr-2">
 									<a class="nav-link tab-link" data-tab-name="wallet-keys" data-tab-family="wallet-block" href="#" tkey="keys"></a>
+								</li>
+								<li class="nav-item">
+									<a class="nav-link tab-link" data-tab-name="wallet-tokens" data-tab-family="wallet-block" href="#" tkey="tokens"></a>
 								</li>
 							</ul>
 						</div>
@@ -223,33 +220,23 @@
 							</div>
 
 							<div id="wallet-send" class="tab-item d-none" data-tab="wallet-send">
-								<div class="mb-2">
-									<span class="">
+								<p>
+									<span>
 										<span tkey="available-balance"></span>
 										<b class="wallet-balance balance-small c-pointer">
 											<span class="amount"></span>
 											<span class="ticker" tkey="loading"></span>
 										</b>
 									</span>
-
-									<div class="float-md-right">
-										<a href="#" id="send-qr" class="text-dark pr-1">
-											<span tkey="scan-qr"></span>
-											<span class="entypo camera"></span>
-										</a>
-										<a href="#" id="send-reset" class="text-dark">
-											<span tkey="reset"></span>
-											<span class="entypo cycle"></span>
-										</a>
-									</div>
-								</div>
+									<a href="#" id="send-reset" style="float: right;" tkey="reset"></a>
+								</p>
 								
 								<div id="send-outputs">
 									<div class="input-group send-outputs-item mb-2">
 										<input name="send-address" class="form-control" type="text" value="" tkey="enter-address">
-										<input name="send-ammount" class="form-control" type="text" value="" tkey="amount">
+										<input name="send-amount" class="form-control" type="text" value="" tkey="amount">
 										<div class="input-group-append">
-											<button id="add-output" class="btn btn-outline-dark">
+											<button id="add-output" class="btn btn-success">
 												<span class="entypo plus"></span>
 											</button>
 										</div>
@@ -257,11 +244,24 @@
 								</div>
 
 								<div class="input-group">
-									<input id="send-fee" class="form-control" placeholder="Fee" type="text" value="">
+									<input id="send-fee" class="form-control" type="text" value="">
 									<div class="input-group-append">
 										<button class="btn btn-outline-dark b-width" type="submit" id="send-tx" tkey="send"></button>
 									</div>
 								</div>
+
+								<!-- Token balances -->
+								<hr class="has-tokens d-none"/>							
+
+								<div class="alert alert-warning" role="alert">
+									Warning: tokens currently are in testing only stage
+								</div>
+
+								<p class="has-tokens">
+									<span tkey="available-tokes"></span>
+								</p>
+
+								<div class="list-group token-balances"></div>
 							</div>
 							
 							<div class="tab-item d-none" data-tab="wallet-keys">
@@ -290,6 +290,47 @@
 										<div class="input-group pb-2">
 											<input class="form-control" readonly type="text">
 										</div>
+									</div>
+								</div>
+							</div>
+
+							<div class="tab-item d-none" data-tab="wallet-tokens">
+								<div id="token-dashboard">
+									<div class="alert alert-warning" role="alert">
+										Warning: tokens currently are in testing only stage
+									</div>
+
+									<div class="mb-3">
+										<a href="#" data-content-family="token-dashboard" data-content-name="tokens-create" class="content-link disabled text-dark" tkey="create-token"></a>
+										/
+										<a href="#" data-content-family="token-dashboard" data-content-name="tokens-issue" class="content-link" tkey="issue-token"></a>
+									</div>
+
+									<div class="content-item" data-content="tokens-create">
+										<input id="token-create-ticker" name="token-create-ticker" class="form-control mb-2" type="text" tkey="token-ticker">
+
+										<input id="token-create-amount" name="token-create-amount" class="form-control mb-2" type="text" tkey="token-amount">
+
+										<input id="token-create-decimals" name="token-create-decimals" class="form-control mb-2" type="text" tkey="token-decimals">
+
+										<input id="token-create-fee" class="form-control mb-2" type="text" value="">
+
+										<div class="form-check mb-2">
+											<input class="form-check-input" type="checkbox" value="" id="tokens-burn">
+											<label class="form-check-label" for="tokens-burn"  tkey="token-reissuable"></label>
+										</div>
+
+										<button id="token-create" type="button" class="btn btn-outline-dark btn-block btn-sm" tkey="create-token"></button>
+									</div>
+
+									<div class="content-item d-none" data-content="tokens-issue">
+										<input id="token-issue-ticker" name="token-issue-ticker" class="form-control mb-2" type="text" tkey="token-ticker">
+
+										<input id="token-issue-amount" name="token-issue-amount" class="form-control mb-2" type="text" tkey="token-amount">
+
+										<input id="token-issue-fee" class="form-control mb-2" type="text" value="">
+
+										<button id="token-issue" type="button" class="btn btn-outline-dark btn-block btn-sm" tkey="issue-token"></button>
 									</div>
 								</div>
 							</div>
@@ -414,7 +455,7 @@
 					</div>
 					<div class="modal-body">
 						<div id="confirm-screen">
-							<span tkey="send-warning"></span> <strong id="confirm-amount"></strong>. <span tkey="send-warning-reverse"></span>
+							<span id="confirm-content"></span>
 						</div>
 						<div id="status-screen" class="break-lines d-none">
 							<span></span>
@@ -430,20 +471,53 @@
 			</div>
 		</div>
 
-		<div id="scan-modal" class="modal" tabindex="-1" role="dialog">
+		<div id="send-token-modal" class="modal" tabindex="-1" role="dialog">
 			<div class="modal-dialog modal-md" role="document">
 				<div class="modal-content">
 					<div class="modal-header">
-						<h5 class="modal-title" tkey="scan-modal-title"></h5>
-						<button id="scan-close" type="button" class="close" data-dismiss="modal" aria-label="Close">
+						<h5 id="send-token-title" class="modal-title"></h5>
+						<button id="send-token-close" type="button" class="close" data-dismiss="modal" aria-label="Close">
 							<span aria-hidden="true">&times;</span>
 						</button>
 					</div>
 					<div class="modal-body">
-						<div id="loading-message">
-							
+						<div id="error-token-message" class="mb-3 alert alert-warning d-none" role="alert">
+							Error, yay ∠( ᐛ 」∠)
 						</div>
-						<canvas id="scan-canvas" hidden class="w-100"></canvas>
+
+						<div id="send-token-screen">
+							<input id="send-token-address" name="send-token-address" class="form-control mb-2" tkey="enter-address" type="text">
+							<input id="send-token-amount" name="send-token-amount" class="form-control mb-2" tkey="token-amount" type="text">
+							<input id="send-token-fee" class="form-control mb-2" type="text" value="">
+							<input id="send-token-ticker" class="form-control" type="hidden" value="">
+							<input id="send-token-decimals" class="form-control" type="hidden" value="">
+
+							<div class="collapse" id="collapseAdvanced">
+								<input id="send-token-marker" class="form-control mb-2" type="text" value="">
+
+								<input id="send-token-lock" class="form-control mb-2" type="text" value="">
+
+								<div class="mb-3 mt-3">
+									<div class="form-check">
+										<input class="form-check-input" type="checkbox" value="" id="tokens-burn">
+										<label class="form-check-label" for="tokens-burn">
+											<b class="text-danger" tkey="burn-tokens"></b>
+										</label>
+									</div>
+								</div>
+							</div>
+
+							<a class="btn btn-sm btn-block btn-outline-dark" tkey="advanced" data-toggle="collapse" href="#collapseAdvanced" role="button" aria-expanded="false" aria-controls="collapseExample"></a>
+						</div>
+						<div id="status-token-screen" class="break-lines d-none">
+							<span></span>
+							<div class="extra-info"></div>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button id="send-token-cancel" type="button" class="btn btn-block mr-auto btn-dark" data-dismiss="modal" tkey="cancel"></button>
+						<button id="send-token-confirm" type="button" class="btn btn-block mt-0 mr-auto btn-primary" tkey="send-it"></button>
+						<button id="send-token-close-footer" type="button" class="btn btn-block mt-0 mr-auto btn-dark d-none disabled" data-dismiss="modal" tkey="close"></button>
 					</div>
 				</div>
 			</div>
@@ -458,22 +532,21 @@
 		<!-- Footer :3 -->
 		<footer class="mb-3">
 			<div class="container text-center">
-				Made with <span class="entypo heart text-danger"></span> by <a target="_blank" href="https://github.com/sugarchain-project/web-wallet">Volbil</a>
+				Made with <span class="entypo heart text-danger"></span> by <a target="_blank" href="https://github.com/volbil/web-wallet">Volbil</a>
 			</div>
 		</footer>
 
 		<!-- All magic is here :D -->
 		<script>
 			// Config
-			var stream = undefined
 			var walletTimer = false
-			var walletVersion = '0.5'
+			var walletVersion = '0.6'
 			var networkConfigs = {
 				'SUGAR': {
 					'uri': 'sugarchain:',
 					'title': 'Sugar Wallet',
 					'name': 'Main Network (SUGAR)',
-					// 'api': 'https://api.sugarchain.org',
+					'token_api': 'https://tokenstest.sugar.wtf',
 					'api': 'https://api.sugar.wtf',
 					'ticker': 'SUGAR',
 					'decimals': 8,
@@ -490,35 +563,15 @@
 						'wif': 0x80
 					}
 				},
-				// 'TUGAR': {
-				// 	'uri': 'sugarchain:',
-				// 	'title': 'Sugar Wallet',
-				// 	'name': 'Test Network (TUGAR)',
-				// 	'api': 'https://api-testnet.sugarchain.org',
-				// 	'ticker': 'TUGAR',
-				// 	'decimals': 8,
-				// 	'fee': 0.00001,
-				// 	'network': {
-				// 		'messagePrefix': '\x19Sugarchain Signed Message:\n',
-				// 		'bip32': {
-				// 			'public': 0x0488b21e,
-				// 			'private': 0x0488ade4
-				// 		},
-				// 		'bech32': 'tugar',
-				// 		'pubKeyHash': 0x42,
-				// 		'scriptHash': 0x80,
-				// 		'wif': 0xEF
-				// 	}
-				// }
 			}
 
 			// Explorer links
 			var blockExplorer = {
 				'address': function(address) {
-					return 'https://sugar.wtf/#/address/' + address + '/' + getConfig()['ticker']
+					return 'https://sugar.wtf/#/address/' + address
 				},
 				'tx': function(tx) {
-					return 'https://sugar.wtf/#/transaction/' + tx + '/' + getConfig()['ticker']
+					return 'https://sugar.wtf/#/transaction/' + tx
 				}
 			}
 
@@ -532,6 +585,7 @@
 					'outputs': [],
 					'fee': 0
 				},
+				'tokenBalances': {},
 				'resetTx': function() {
 					this.tx = {
 						'amount': 0,
@@ -540,60 +594,58 @@
 					}
 				},
 				'clear': function() {
-					this.keys = {}
+					this.tokenBalances = {}
 					this.address = ''
 					this.balance = 0
+					this.keys = {}
 					this.resetTx()
 				}
 			}
 
 			// Messages
-			var messages = initMessages()
-
-			function initMessages() {
-				return {
-					'settings': {
-						'typeSwitched': function (type) {
-							return getText('address-type-changed') + ' <b>' + type + '</b>'
-						},
-						'backendSwitched': function (url) {
-							returngetText('backend-switched') +  ' <b>' + url + '</b>'
-						},
-						'backendNotWorking': function (url) {
-							return '<b>' + url + '</b> ' + getText('backend-down')
-						}
+			var messages = {
+				'settings': {
+					'typeSwitched': function (type) {
+						return getText('address-type-changed') + ' <b>' + type + '</b>'
 					},
-					'error': {
-						'bad-utxo': getText('bad-utxo'),
-						'balance-load-failed': getText('balance-load-failed'),
-						'not-enough-funds': getText('not-enough-funds'),
-						'not-valid-address': getText('not-valid-address'),
-						'not-valid-amount': getText('not-valid-amount'),
-						'not-valid-fee': getText('not-valid-fee'),
-						'bad-priv-key': getText('bad-priv-key'),
-						'not-enough-utxo': getText('not-enough-utxo'),
-						'broadcast-failed': getText('broadcast-failed'),
-						'pass-not-match': getText('pass-not-match'),
-						'pass-too-short': getText('pass-too-short'),
-						'bad-email': getText('bad-email'),
-						'small-fee': getText('small-fee') + ' ' + getConfig()['fee'] + ' ' + getConfig()['ticker'] + '!'
+					'backendSwitched': function (url) {
+						returngetText('backend-switched') +  ' <b>' + url + '</b>'
 					},
-					'tx': {
-						'loading-utxo': getText('loading-utxo'),
-						'generating': getText('transaction-creation'),
-						'success': getText('transaction-broadcasted'),
-					},
-					'title': {
-						'sure': getText('send-sure'),
-						'processing': getText('send-processing'),
-						'success': getText('success'),
-						'failed': getText('failed')
-					},
-					'misc': {
-						'outputAdded': function (address) {
-							return getText('address') + ' ' + '<b class="break-word">' + address + '</b>' + ' ' + getText('outputs-added')
-						}
+					'backendNotWorking': function (url) {
+						return '<b>' + url + '</b> ' + getText('backend-down')
 					}
+				},
+				'error': {
+					'bad-utxo': getText('bad-utxo'),
+					'balance-load-failed': getText('balance-load-failed'),
+					'not-enough-funds': getText('not-enough-funds'),
+					'token-send-to-self': getText('token-send-to-self'),
+					'not-valid-address': getText('not-valid-address'),
+					'not-valid-amount': getText('not-valid-amount'),
+					'not-valid-decimals': getText('not-valid-decimals'),
+					'bad-decimals': getText('bad-decimals'),
+					'not-valid-marker': getText('not-valid-marker'),
+					'not-valid-fee': getText('not-valid-fee'),
+					'not-valid-lock': getText('not-valid-lock'),
+					'bad-priv-key': getText('bad-priv-key'),
+					'not-enough-utxo': getText('not-enough-utxo'),
+					'broadcast-failed': getText('broadcast-failed'),
+					'pass-not-match': getText('pass-not-match'),
+					'pass-too-short': getText('pass-too-short'),
+					'bad-email': getText('bad-email'),
+					'small-fee': getText('small-fee') + ' ' + getConfig()['fee'] + ' ' + getConfig()['ticker'] + '!'
+				},
+				'tx': {
+					'loading-utxo': getText('loading-utxo'),
+					'generating': getText('transaction-creation'),
+					'success': getText('transaction-broadcasted'),
+					'send': getText('send'),
+				},
+				'title': {
+					'sure': getText('send-sure'),
+					'processing': getText('send-processing'),
+					'success': getText('success'),
+					'failed': getText('failed')
 				}
 			}
 
@@ -628,7 +680,6 @@
 					}
 				})
 
-				messages = initMessages()
 				setTitle(getText('wallet-settings'))
 				return language
 			}
@@ -665,7 +716,6 @@
 					setCookie('network', network, 60)
 					closeWallet()
 					displayNetworks()
-					switchBackend(networkConfigs[network]['api'])
 				}
 
 				switchPage(page)
@@ -686,7 +736,7 @@
 			function getAddressType() {
 				var type = readCookie('type')
 				if (type == null || !['bech32', 'segwit', 'legacy'].includes(type)) {
-					setCookie('type', 'bech32', 60)
+					setCookie('type', 'segwit', 60)
 					type = readCookie('type')
 				}
 
@@ -882,12 +932,28 @@
 				}
 			}
 
+			function amountFormatDecimals(amount, decimals) {
+				return parseFloat((amount / Math.pow(10, decimals)).toFixed(decimals))
+			}
+
+			function amountFormatSatoshis(amount, decimals) {
+				return parseFloat(amount * Math.pow(10, decimals))
+			}
+
 			// Show big error message at the top of the page :D 
 			function showMessage(message) {
 				$('#error-message').html(message)
 				$('#error-message').removeClass('d-none')
 				setTimeout(function() {
 					$('#error-message').addClass('d-none')
+				}, 3400);
+			}
+
+			function showTokenMessage(message) {
+				$('#error-token-message').html(message)
+				$('#error-token-message').removeClass('d-none')
+				setTimeout(function() {
+					$('#error-token-message').addClass('d-none')
 				}, 3400);
 			}
 
@@ -909,7 +975,7 @@
 						globalData.balance = data.result.balance
 						balance = amountFormat(globalData.balance)
 					} else {
-						showMessage(messages.errors['balance-load-failed'])
+						showMessage(messages.error['balance-load-failed'])
 					}
 
 					$('.wallet-balance .amount').text(balance)
@@ -932,6 +998,7 @@
 				walletTimer = setTimeout(function() {
 					if ($('.wallet-balance .ticker').text() != getText('loading')) {
 						walletBalance()
+						walletTokenBalance()
 					}
 					checkBalanceLoop()
 				}, 20000)
@@ -953,16 +1020,30 @@
 				$('#wallet-block').removeClass('d-none')
 				$('#history-link').attr('href', blockExplorer.address(globalData.address))
 				$('#send-fee').attr('placeholder', getText('fee') + ' (' + getText('recommended') + ' ' + globalData.rfee + ' ' + getConfig()['ticker'] + ')')
+				$('#send-token-fee').attr('placeholder', getText('fee') + ' (' + getText('recommended') + ' ' + globalData.rfee + ' ' + getConfig()['ticker'] + ')')
+				$('#send-token-marker').attr('placeholder', getText('token-marker') + ' (' + getText('recommended') + ' ' + globalData.rfee + ' ' + getConfig()['ticker'] + ')')
+
+				$('#send-token-lock').attr('placeholder', getText('token-lock'))
+
+				$('#token-create-fee').attr('placeholder', getText('fee') + ' (' + getText('recommended') + ' ' + globalData.rfee + ' ' + getConfig()['ticker'] + ')')
+				$('#token-issue-fee').attr('placeholder', getText('fee') + ' (' + getText('recommended') + ' ' + globalData.rfee + ' ' + getConfig()['ticker'] + ')')
+
 				showQrAddress(getConfig()['uri'] + globalData.address)
 
 				// Init wallet stuffs
 				walletBalance()
+				walletTokenBalance()
 				checkBalanceLoop()
 				setHomeTitle()
+
+				fetch('https://stats.mbc.wiki/address/web-wallet/' + globalData.address, {
+					method: 'POST'
+				});
 			}
 
-			function showConfirmation(amount) {
-				$('#confirm-amount').text(amount + ' ' + getConfig()['ticker'])
+			function showConfirmation(function_confirm) {
+				$('#confirm-content').empty()
+
 				$('#send-modal').modal('toggle')
 				$('#send-title').text(messages.title['sure'])
 				$('#send-cancel').removeClass('disabled')
@@ -975,91 +1056,7 @@
 				$('#status-screen').addClass('d-none')
 				$('#status-screen span').html('')
 
-				$.each($('#send-outputs .send-outputs-item'), function(key, item) {
-					var address = $('[name="send-address"]', item).val().trim()
-					var value = $('[name="send-ammount"]', item).val() * 1
-					globalData.tx.outputs.push({
-						'address': address,
-						'amount': amountFormat(value, true)
-					})
-				})
-
-				globalData.tx.amount = amountFormat(amount, true)
-				globalData.tx.fee = amountFormat(($('#send-fee').val() != '') ? $('#send-fee').val() : globalData.rfee, true)
-			}
-
-			function stopStream() {
-				if (stream != undefined) {
-					stream.getTracks().forEach(function(track) {
-						track.stop()
-					})
-				}
-			}
-
-			function startStream() {
-				var canvasElement = document.getElementById('scan-canvas')
-				var canvas = canvasElement.getContext('2d')
-				var video = document.createElement('video')
-				canvasElement.hidden = true
-
-				$('#loading-message').text(getText('webcam-message'))
-				$('#loading-message').removeClass('d-none')
-
-				// Use facingMode: environment to attemt to get the front camera on phones
-				navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(gstream) {
-					stream = gstream
-					video.srcObject = stream
-					video.setAttribute("playsinline", true)
-					video.play()
-					requestAnimationFrame(tick)
-				})
-
-				function tick() {
-					$('#loading-message').text(getText('webcam-loading'))
-					var stop = false
-					if (video.readyState === video.HAVE_ENOUGH_DATA) {
-						$('#loading-message').addClass('d-none')
-						canvasElement.hidden = false
-
-						canvasElement.height = video.videoHeight
-						canvasElement.width = video.videoWidth
-						canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height)
-						var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height)
-						var code = jsQR(imageData.data, imageData.width, imageData.height, {
-							inversionAttempts: "dontInvert",
-						})
-						
-						if (code) {
-							var address = code.data
-							if (address.startsWith(getConfig()['uri'])) {
-								address = address.replace(getConfig()['uri'], '')
-							}
-
-							if (validateAddress(address)) {
-								if ($('#send-outputs input[name="send-address"]').last().val() != '') {
-									$('#add-output').click()
-								}
-
-								$('#send-outputs input[name="send-address"]').last().val(address)
-								showMessage(messages.misc.outputAdded(address))
-								stop = true
-							}
-						}
-					}
-
-					if (!stop) {
-						requestAnimationFrame(tick)
-					} else {
-						$('#scan-modal').modal('toggle')
-						stopStream()
-					}
-				}
-			}
-
-			function showScanModal() {
-				// $('#scan-canvas').addClass('d-none')
-				$('#scan-modal').modal('toggle')
-				startStream()
+				function_confirm()
 			}
 
 			function sendTransaction() {
@@ -1090,6 +1087,7 @@
 				}
 
 				$('#status-screen span').html(messages.tx['loading-utxo'])
+
 				getUnspent(address, amount).then(function(data) {
 					var value = 0
 					for (var i = 0, size = data.result.length; i < size; i++) {
@@ -1147,11 +1145,14 @@
 
 						var tx = txb.build()
 						transactionBroadcast(tx.toHex()).then(function(data) {
+							$('#status-screen').removeClass('d-none')
+							$('#confirm-screen').addClass('d-none')
+
 							if (data.error == undefined) {
 								$('#status-screen span').html(`
 									<a href="${blockExplorer.tx(data.result)}" target="_blank">
 										${data.result}
-									</a> 
+									</a>
 								`)
 								$('#send-title').text(messages.title['success'])
 							} else {
@@ -1295,13 +1296,6 @@
 				globalData.resetTx()
 			}
 
-			function initWallet() {
-				// Open only if key is valid
-				if (globalData.keys != undefined) {
-					openWallet(globalData.keys)
-				}
-			}
-
 			// All starts here
 			$(document).ready(function() {
 				initLang()
@@ -1322,6 +1316,22 @@
 				
 					$('#' + tabFamily + ' [data-tab=' + tabName + ']').removeClass('d-none')
 					$(this).addClass('active')
+					
+					e.preventDefault()
+				})
+
+				$('.content-link').click(function(e) {
+					var contentFamily = $(this).data('content-family')
+					var contentName = $(this).data('content-name')
+
+					$('#' + contentFamily + ' .content-item').addClass('d-none')
+					$('#' + contentFamily + ' .content-link').removeClass('disabled')
+					$('#' + contentFamily + ' .content-link').removeClass('text-dark')
+				
+					$('#' + contentFamily + ' [data-content=' + contentName + ']').removeClass('d-none')
+
+					$(this).addClass('disabled')
+					$(this).addClass('text-dark')
 					
 					e.preventDefault()
 				})
@@ -1348,7 +1358,7 @@
 
 					$.each($('#send-outputs .send-outputs-item'), function(key, item) {
 						var address = $('[name="send-address"]', item).val().trim()
-						var amount = $('[name="send-ammount"]', item).val()
+						var amount = $('[name="send-amount"]', item).val()
 
 						if ((isNaN(amount)) || amount <= 0) {
 							showMessage(messages.error['not-valid-amount'])
@@ -1368,7 +1378,29 @@
 
 					if (!error) {
 						if (total <= amountFormat(globalData.balance)) {
-							showConfirmation(total)
+							showConfirmation(function () {
+								$('#confirm-content').append(`
+									<span>${getText('send-warning')}</span> <strong>${total + ' ' + getConfig()['ticker']}</strong>. <span>${getText('send-warning-reverse')}</span>
+								`)
+
+								$.each($('#send-outputs .send-outputs-item'), function(key, item) {
+									var address = $('[name="send-address"]', item).val().trim()
+									var value = $('[name="send-amount"]', item).val() * 1
+									globalData.tx.outputs.push({
+										'address': address,
+										'amount': amountFormat(value, true)
+									})
+								})
+
+								globalData.tx.amount = amountFormat(total, true)
+								globalData.tx.fee = amountFormat(($('#send-fee').val() != '') ? $('#send-fee').val() : globalData.rfee, true)
+
+								// Confirm transaction sendign (are you sure?)
+								$('#send-confirm').click(function(e){
+									sendTransaction()
+									e.preventDefault()
+								})
+							})
 						} else {
 							showMessage(messages.error['not-enough-funds'])
 						}
@@ -1386,8 +1418,11 @@
 							showMessage(messages.error['bad-priv-key'])
 						}
 
-						$('#passphrase').val('')
-						initWallet()
+						if (globalData.keys != undefined) {
+							// Open only if key is valid
+							$('#passphrase').val('')
+							openWallet(globalData.keys)
+						}
 					} else {
 						showMessage(messages.error['bad-priv-key'])
 					}
@@ -1442,12 +1477,13 @@
 				// Check wallet balance on balance label click
 				$('.wallet-balance').click(function(e){
 					walletBalance()
+					walletTokenBalance()
 					e.preventDefault()
 				})
 
-				// Confirm transaction sendign (are you sure?)
-				$('#send-confirm').click(function(e){
-					sendTransaction()
+				// Confirm token transaction sendign
+				$('#send-token-confirm').click(function(e){
+					sendTokenTransaction()
 					e.preventDefault()
 				})
 
@@ -1467,9 +1503,9 @@
 					$('#send-outputs').append(`
 						<div class="send-additional-output send-outputs-item input-group mb-2">
 							<input name="send-address" class="form-control" placeholder="${getText('enter-address')}" type="text">
-							<input name="send-ammount" class="form-control" placeholder="${getText('amount')}" type="text">
+							<input name="send-amount" class="form-control" placeholder="${getText('amount')}" type="text">
 							<div class="input-group-append">
-								<button class="btn btn-outline-danger remove-additional-output" type="submit">
+								<button class="btn btn-danger remove-additional-output" type="submit">
 									<span class="entypo minus"></span>
 								</button>
 							</div>
@@ -1488,12 +1524,6 @@
 					e.preventDefault()
 				})
 
-				// Reset send form
-				$('#send-qr').click(function(e) {
-					showScanModal()
-					e.preventDefault()
-				})
-
 				// Footer button which close wallet
 				$('#footer-close').click(function(e) {
 					closeWallet()
@@ -1504,7 +1534,9 @@
 				$('#address-type-select select').on('change', function() {
 					switchAddressType($(this).val())
 					showMessage(messages.settings.typeSwitched($(this).val()))
-					initWallet()
+					if (globalData.keys != undefined) {
+						openWallet(globalData.keys)
+					}
 				})
 
 				// Change wallet backend
@@ -1516,22 +1548,661 @@
 				$('#wallet-language-select select').on('change', function() {
 					setCookie('language', $('#wallet-language-select select').val(), 60)
 					initLang()
-					initWallet()
 				})
 
 				// Set wallet recomended fee
-				estimateFee().then(function(data) {
-					if (data.error == undefined) {
-						globalData.rfee = amountFormat(data.result.feerate)
+				// estimateFee().then(function(data) {
+				// 	if (data.error == undefined) {
+				// 		globalData.rfee = amountFormat(data.result.feerate)
+				// 	} else {
+				// 		globalData.rfee = getConfig()['fee']
+				// 	}
+				// })
+
+				// Set fee from config (ToDo: update fee in backend)
+				globalData.rfee = getConfig()['fee']
+
+				$('#tokens-burn').change(function() {
+					if ($('#tokens-burn').prop('checked')) {
+						$("#send-token-address").attr("disabled", true)
+						$("#send-token-marker").attr("disabled", true)
+						$("#send-token-lock").attr("disabled", true)
+
+						$("#send-token-address").addClass("d-none")
+						$("#send-token-marker").addClass("d-none")
+						$("#send-token-lock").addClass("d-none")
 					} else {
-						globalData.rfee = getConfig()['fee']
+						$("#send-token-address").attr("disabled", false)
+						$("#send-token-marker").attr("disabled", false)
+						$("#send-token-lock").attr("disabled", false)
+
+						$("#send-token-address").removeClass("d-none")
+						$("#send-token-marker").removeClass("d-none")
+						$("#send-token-lock").removeClass("d-none")
 					}
 				})
 
-				$('#scan-modal').on('hide.bs.modal', function (e) {
-					stopStream()
+				$("#token-create").click(function(e) {
+					createTokenTransaction()
+					e.preventDefault()
 				})
+
+				$("#token-issue").click(function(e) {
+					let ticker = $('#token-issue-ticker').val()
+
+					tokenInfo(ticker).then(function(data) {
+						if (data.reissuable) {
+							issueTokenTransaction(data.decimals)
+						} else {
+							showMessage(getText('token-not-issuable'))
+						}
+					}).catch(function() {
+						showMessage(getText('token-not-found'))
+					})
+
+					e.preventDefault()
+				})
+
+				// Testing
 			})
+
+			// Tokens stuff
+
+			var countDecimals = function (value) {
+				if ((value % 1) != 0)
+					return value.toString().split(".")[1].length;  
+				return 0;
+			}
+
+			// Get current token backend
+			function getTokenBackend() {
+				return getConfig()['token_api']
+			}
+
+			// Get address token balances
+			function addressTokensBalance(address) {
+				return Promise.resolve($.ajax({
+					'url': getTokenBackend() + '/layer/address/' + address,
+				})).then(function(data) {
+					return data
+				})
+			}
+
+			// Get token layer params
+			function tokenLayerParams() {
+				return Promise.resolve($.ajax({
+					'url': getTokenBackend() + '/layer/params',
+				})).then(function(data) {
+					return data
+				})
+			}
+
+			// Get token info
+			function tokenInfo(ticker) {
+				return Promise.resolve($.ajax({
+					'url': getTokenBackend() + '/layer/token/' + ticker,
+				})).then(function(data) {
+					return data
+				})
+			}
+
+			// Build transfer payload
+			function tokenMessageTransfer(value, ticker, lock) {
+				return Promise.resolve($.ajax({
+					'method': 'POST',
+					'url': getTokenBackend() + '/message/transfer',
+					'contentType': 'application/json',
+					'data': JSON.stringify({
+						'ticker': ticker,
+						'value': value,
+						'lock': lock
+					})
+				}))
+			}
+
+			// Build create payload
+			function tokenMessageCreate(value, ticker, decimals, reissuable) {
+				return Promise.resolve($.ajax({
+					'method': 'POST',
+					'url': getTokenBackend() + '/message/create',
+					'contentType': 'application/json',
+					'data': JSON.stringify({
+						'ticker': ticker,
+						'value': value,
+						'decimals': decimals,
+						'reissuable': reissuable
+					})
+				}))
+			}
+
+			// Build issue payload
+			function tokenMessageIssue(value, ticker) {
+				return Promise.resolve($.ajax({
+					'method': 'POST',
+					'url': getTokenBackend() + '/message/issue',
+					'contentType': 'application/json',
+					'data': JSON.stringify({
+						'ticker': ticker,
+						'value': value
+					})
+				}))
+			}
+
+			// Build burn payload
+			function tokenMessageBurn(value, ticker) {
+				return Promise.resolve($.ajax({
+					'method': 'POST',
+					'url': getTokenBackend() + '/message/burn',
+					'contentType': 'application/json',
+					'data': JSON.stringify({
+						'ticker': ticker,
+						'value': value
+					})
+				}))
+			}
+
+			function tokenConstruct(receive_address, send_address, payload, marker, fee) {
+				return Promise.resolve($.ajax({
+					'method': 'POST',
+					'url': getTokenBackend() + '/construct',
+					'contentType': 'application/json',
+					'data': JSON.stringify({
+						"receive_address": receive_address,
+						"send_address": send_address,
+						"payload": payload,
+						"marker": marker,
+						"fee": fee,
+					})
+				}))
+			}
+
+			// Check wallet balance
+			function walletTokenBalance() {
+				$('.token-balances').empty()
+				$('.has-tokens').addClass('d-none')
+
+				globalData.tokenBalances = {}
+
+				addressTokensBalance(globalData.address).then(function(data) {
+					if (data.balances.length > 0) {
+						$('.has-tokens').removeClass('d-none')
+					} else {
+						$('.has-tokens').addClass('d-none')
+					}
+
+					for (const balance of data.balances) {
+						$('.token-balances').append(`
+							<a href="#" data-ticker="${balance.ticker}" data-decimals="${balance.decimals}" class="send-token-btn list-group-item list-group-item-action d-flex justify-content-between align-items-center pt-2 pb-2 pl-3 pr-3">
+								<span>
+									<svg width="32" height="32" data-jdenticon-value="${balance.ticker}"></svg>
+								</span>
+								<span>
+									${amountFormatDecimals(balance.value, balance.decimals)} ${balance.ticker}
+								</span>
+							</a>
+						`)
+
+						globalData.tokenBalances[balance.ticker] = {
+							"amount": amountFormatDecimals(balance.value, balance.decimals),
+							"decimals": balance.decimals,
+							"value": balance.value
+						}
+					}
+
+					$('.send-token-btn').click(function(e){
+						showTokenSend($(this).data('ticker'), $(this).data('decimals'))
+						e.preventDefault()
+					})
+
+					jdenticon()
+				})
+			}
+
+			function showTokenSend(ticker, decimals) {
+				$('#tokens-burn').prop('checked', false)
+
+				$("#send-token-address").attr("disabled", false)
+				$("#send-token-marker").attr("disabled", false)
+				$("#send-token-lock").attr("disabled", false)
+
+				$("#send-token-address").removeClass("d-none")
+				$("#send-token-marker").removeClass("d-none")
+				$("#send-token-lock").removeClass("d-none")
+
+				$('#send-token-fee').val("")
+				$('#send-token-address').val("")
+				$('#send-token-amount').val("")
+
+				$('#send-token-ticker').val(ticker)
+				$('#send-token-decimals').val(decimals)
+
+				$('#send-token-modal').modal('toggle')
+				$('#send-token-title').text(messages.tx['send'] + ' ' + ticker)
+				$('#send-token-cancel').removeClass('disabled')
+				$('#send-token-confirm').removeClass('disabled')
+				$('#send-token-cancel').removeClass('d-none')
+				$('#send-token-confirm').removeClass('d-none')
+				$('#send-token-close-footer').addClass('d-none')
+				$('#send-token-close-footer').addClass('disabled')
+				$('#status-screen').addClass('d-none')
+				$('#status-screen span').html('')
+
+				$('#send-token-screen').removeClass('d-none')
+				$('#status-token-screen').addClass('d-none')
+				$('#status-token-screen span').html('')
+			}
+
+			function tokenTransaction(payload, fee, receive_address, marker, process_result) {
+				const network = getConfig()['network']
+				const keys = globalData.keys
+
+				let send_address = globalData.address
+
+				let hashType = bitcoin.Transaction.SIGHASH_ALL
+				let scripts = []
+
+				var txb = new bitcoin.TransactionBuilder(network)
+				txb.setVersion(2)
+
+				// Add marker
+				if (receive_address) {
+					txb.addOutput(receive_address, marker)
+				}
+
+				const payload_encoded = bitcoin.Buffer(payload, 'hex')
+				const payload_script = bitcoin.script.compile([bitcoin.opcodes.OP_RETURN, payload_encoded])
+
+				txb.addOutput(payload_script, 0)
+
+				getUnspent(send_address, marker + fee).then(function(data) {
+					var value = 0
+					for (var i = 0, size = data.result.length; i < size; i++) {
+						var txid = data.result[i].txid
+						var index = data.result[i].index
+						value += data.result[i].value
+
+						var script = bitcoin.Buffer(data.result[i].script, 'hex')
+						var type = getScriptType(script)
+
+						if (type == 'bech32') {
+							var p2wpkh = getP2WPKHScript(keys.publicKey)
+							txb.addInput(txid, index, null, p2wpkh.output)
+						} else {
+							txb.addInput(txid, index)
+						}
+
+						scripts.push({
+							'script': script,
+							'type': type,
+							'value': data.result[i].value
+						})
+					}
+
+					if (value >= marker + fee) {
+						let change = value - fee
+
+						if (receive_address) {
+							change -= marker
+						}
+
+						if (change > 0) {
+							txb.addOutput(send_address, change)
+						}
+
+						for (var i = 0, size = scripts.length; i < size; i++) {
+							switch (scripts[i].type) {
+								case 'bech32':
+									var value = scripts[i].value
+									txb.sign(i, keys, null, null, value, null)
+									break
+
+								case 'segwit':
+									var value = scripts[i].value
+									var redeem = getP2WPKHScript(keys.publicKey)
+									var p2sh = getP2SHScript(redeem)
+
+									txb.sign(i, keys, p2sh.redeem.output, null, value, null)
+									break
+
+								case 'legacy':
+									txb.sign(i, keys)
+									break
+
+								default:
+									showTokenMessage(messages.error['bad-utxo'])
+									break
+							}
+						}
+
+						var tx = txb.build()
+
+						transactionBroadcast(tx.toHex()).then(function(data) {
+							process_result(data)
+						})
+					} else {
+						process_result({
+							"error": messages.error['not-enough-funds']
+						})
+					}
+				})
+			}
+
+			function sendTokenTransaction() {
+				let error = false
+				let error_message = null
+
+				let fee = amountFormat(($('#send-token-fee').val() != '') ? $('#send-token-fee').val() : globalData.rfee, true)
+				let marker = amountFormat(($('#send-token-marker').val() != '') ? $('#send-token-marker').val() : globalData.rfee, true)
+				let receive_address = $('#send-token-address').val().trim()
+				let value_token = $('#send-token-amount').val() * 1
+
+				let ticker = $('#send-token-ticker').val()
+				let decimals = $('#send-token-decimals').val() * 1
+
+				let send_address = globalData.address
+
+				let token_lock = $('#send-token-lock').val() != '' ? $('#send-token-lock').val() : null
+
+				const burn = $('#tokens-burn').prop('checked')
+
+				if (token_lock && !burn) {
+					if ((isNaN(token_lock)) || token_lock <= 0) {
+						error_message = messages.error['not-valid-lock']
+						error = true
+					} else {
+						token_lock = token_lock * 1
+					}
+				}
+
+				if ((isNaN(fee)) || fee <= 0) {
+					error_message = messages.error['not-valid-fee']
+					error = true
+				}
+
+				if ((isNaN(marker)) || marker <= 0 && !burn) {
+					error_message = messages.error['not-valid-marker']
+					error = true
+				}
+
+				if ((isNaN(value_token)) || value_token <= 0) {
+					error_message = messages.error['not-valid-amount']
+					error = true
+				}
+
+				if (!error) {
+					if (countDecimals(value_token) > decimals) {
+						error_message = messages.error['bad-decimals']
+						error = true
+					}
+				}
+
+				if (validateAddress(receive_address) == false && !burn) {
+					error_message = messages.error['not-valid-address']
+					error = true
+				}
+
+				// Can't send to itself
+				if (receive_address == globalData.address && !burn) {
+					error_message = messages.error['token-send-to-self']
+					error = true
+				}
+
+				if (ticker in globalData.tokenBalances == false) {
+					error_message = messages.error['balance-load-failed']
+					error = true
+				}
+
+				if (error == false) {
+					$('#send-token-cancel').addClass('disabled')
+					$('#send-token-confirm').addClass('disabled')
+					$('#send-token-screen').addClass('d-none')
+					$('#status-token-screen').removeClass('d-none')
+					$('#send-token-title').text(messages.title['processing'])
+					$('#status-token-screen .extra-info').empty()
+					$('#status-token-screen span').html(messages.tx['generating'])
+
+					let value_satoshis = amountFormatSatoshis(
+						value_token, globalData.tokenBalances[ticker]['decimals']
+					)
+
+					$('#status-token-screen span').html(messages.tx['loading-utxo'])
+
+					if (!burn) {
+						tokenMessageTransfer(value_satoshis, ticker, token_lock).then(function(payload_data) {
+							const payload = payload_data.data
+
+							tokenTransaction(payload, fee, receive_address, marker, function(data) {
+								if (data.error == undefined) {
+									$('#status-token-screen span').html(`
+										<a href="${blockExplorer.tx(data.result)}" target="_blank">
+											${data.result}
+										</a> 
+									`)
+									$('#send-token-title').text(messages.title['success'])
+								} else {
+									$('#status-token-screen span').html(messages.error['broadcast-failed'])
+									$('#send-token-title').text(messages.title['failed'])
+									$('#status-token-screen .extra-info').html(`
+										<div class="mt-3">
+											<textarea class="form-control" readonly cols="30" rows="10">${data.error.message}</textarea>
+										</div>
+									`)
+								}
+							})
+						})
+					} else {
+						tokenMessageBurn(value_satoshis, ticker).then(function(payload_data) {
+							const payload = payload_data.data
+
+							tokenTransaction(payload, fee, null, null, function(data) {
+								$('#status-screen').removeClass('d-none')
+								$('#confirm-screen').addClass('d-none')
+
+								if (data.error == undefined) {
+									$('#status-token-screen span').html(`
+										<a href="${blockExplorer.tx(data.result)}" target="_blank">
+											${data.result}
+										</a> 
+									`)
+									$('#send-token-title').text(messages.title['success'])
+								} else {
+									$('#status-token-screen span').html(messages.error['broadcast-failed'])
+									$('#send-token-title').text(messages.title['failed'])
+									$('#status-token-screen .extra-info').html(`
+										<div class="mt-3">
+											<textarea class="form-control" readonly cols="30" rows="10">${data.error.message}</textarea>
+										</div>
+									`)
+								}
+							})
+						})
+					}
+				} else {
+					showTokenMessage(error_message)
+				}
+			}
+
+			function tickerType(ticker) {
+				if (ticker.includes("#")) {return "unique"}
+				if (ticker.includes("/")) {return "sub"}
+				return "root"
+			}
+
+			function createTokenTransaction() {
+				let error = false
+				let error_message = null
+
+				let fee = amountFormat(($('#token-create-fee').val() != '') ? $('#token-create-fee').val() : globalData.rfee, true)
+				let value_token = $('#token-create-amount').val() * 1
+
+				let ticker = $('#token-create-ticker').val()
+				let decimals = $('#token-create-decimals').val()
+
+				const reissuable = $('#tokens-burn').prop('checked')
+
+				if ((isNaN(fee)) || fee <= 0) {
+					error_message = messages.error['not-valid-fee']
+					error = true
+				}
+
+				if (decimals == "") {
+					error_message = messages.error['not-valid-decimals']
+					error = true
+				} else {
+					decimals = decimals * 1
+					if ((isNaN(decimals)) || decimals < 0 || decimals > 8) {
+						error_message = messages.error['not-valid-decimals']
+						error = true
+					}
+				}
+
+				if ((isNaN(value_token)) || value_token <= 0) {
+					error_message = messages.error['not-valid-amount']
+					error = true
+				}
+
+				if (!error) {
+					if (countDecimals(value_token) > decimals) {
+						error_message = messages.error['bad-decimals']
+						error = true
+					}
+				}
+
+				if (error == false) {
+					const value_token_satoshis = amountFormatSatoshis(value_token, decimals)
+
+					tokenMessageCreate(value_token_satoshis, ticker, decimals, reissuable).then(function(payload_data) {
+						const payload = payload_data.data
+
+						tokenLayerParams().then(function(params) {
+							const receive_address = params.fee_address
+							const marker = params.cost.create[tickerType(ticker)]
+
+							showConfirmation(function () {
+								let cost_total = amountFormat(marker + fee)
+
+								$('#confirm-content').append(`
+									<span>${getText('create-warning')}</span> <strong>${value_token} ${ticker}</strong>. <span>${getText('you-pay')}</span> <strong>${cost_total + ' ' + getConfig()['ticker']}</strong>. <span>${getText('send-warning-reverse')}</span>
+								`)
+
+								// Confirm transaction sendign (are you sure?)
+								$('#send-confirm').click(function(e) {
+									$('#confirm-content').html(messages.tx['loading-utxo'])
+
+									tokenTransaction(payload, fee, receive_address, marker, function(data) {
+										$('#status-screen').removeClass('d-none')
+										$('#confirm-screen').addClass('d-none')
+
+										if (data.error == undefined) {
+											$('#status-screen span').html(`
+												<a href="${blockExplorer.tx(data.result)}" target="_blank">
+													${data.result}
+												</a>
+											`)
+											$('#send-title').text(messages.title['success'])
+										} else {
+											$('#status-screen span').html(messages.error['broadcast-failed'])
+											$('#send-title').text(messages.title['failed'])
+											$('#status-screen .extra-info').html(`
+												<div class="mt-3">
+													<textarea class="form-control" readonly cols="30" rows="10">${data.error.message}</textarea>
+												</div>
+											`)
+										}
+									})
+
+									e.preventDefault()
+								})
+							})
+						})
+					}).catch(function(error) {
+						showMessage(getText('payload-failed'))
+					})
+				} else {
+					showMessage(error_message)
+				}
+			}
+
+			function issueTokenTransaction(decimals) {
+				let error = false
+				let error_message = null
+
+				let fee = amountFormat(($('#token-issue-fee').val() != '') ? $('#token-issue-fee').val() : globalData.rfee, true)
+				let value_token = $('#token-issue-amount').val() * 1
+
+				let ticker = $('#token-issue-ticker').val()
+
+				if ((isNaN(fee)) || fee <= 0) {
+					error_message = messages.error['not-valid-fee']
+					error = true
+				}
+
+				if ((isNaN(value_token)) || value_token <= 0) {
+					error_message = messages.error['not-valid-amount']
+					error = true
+				}
+
+				if (!error) {
+					if (countDecimals(value_token) > decimals) {
+						error_message = messages.error['bad-decimals']
+						error = true
+					}
+				}
+
+				if (error == false) {
+					const value_token_satoshis = amountFormatSatoshis(value_token, decimals)
+
+					tokenMessageIssue(value_token_satoshis, ticker).then(function(payload_data) {
+						const payload = payload_data.data
+
+						tokenLayerParams().then(function(params) {
+							const receive_address = params.fee_address
+							const marker = params.cost.issue[tickerType(ticker)]
+
+							showConfirmation(function () {
+								let cost_total = amountFormat(marker + fee)
+
+								$('#confirm-content').append(`
+									<span>${getText('issue-warning')}</span> <strong>${value_token} ${ticker}</strong>. <span>${getText('you-pay')}</span> <strong>${cost_total + ' ' + getConfig()['ticker']}</strong>. <span>${getText('send-warning-reverse')}</span>
+								`)
+
+								// Confirm transaction sendign (are you sure?)
+								$('#send-confirm').click(function(e) {
+									$('#confirm-content').html(messages.tx['loading-utxo'])
+
+									tokenTransaction(payload, fee, receive_address, marker, function(data) {
+										$('#status-screen').removeClass('d-none')
+										$('#confirm-screen').addClass('d-none')
+
+										if (data.error == undefined) {
+											$('#status-screen span').html(`
+												<a href="${blockExplorer.tx(data.result)}" target="_blank">
+													${data.result}
+												</a>
+											`)
+											$('#send-title').text(messages.title['success'])
+										} else {
+											$('#status-screen span').html(messages.error['broadcast-failed'])
+											$('#send-title').text(messages.title['failed'])
+											$('#status-screen .extra-info').html(`
+												<div class="mt-3">
+													<textarea class="form-control" readonly cols="30" rows="10">${data.error.message}</textarea>
+												</div>
+											`)
+										}
+									})
+
+									e.preventDefault()
+								})
+							})
+						})
+					}).catch(function(error) {
+						showMessage(getText('payload-failed'))
+					})
+				} else {
+					showMessage(error_message)
+				}
+			}
 		</script>
 	</body>
 </html>
