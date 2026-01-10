@@ -736,7 +736,7 @@
 			function getAddressType() {
 				var type = readCookie('type')
 				if (type == null || !['bech32', 'segwit', 'legacy'].includes(type)) {
-					setCookie('type', 'segwit', 60)
+					setCookie('type', 'bech32', 60)
 					type = readCookie('type')
 				}
 
